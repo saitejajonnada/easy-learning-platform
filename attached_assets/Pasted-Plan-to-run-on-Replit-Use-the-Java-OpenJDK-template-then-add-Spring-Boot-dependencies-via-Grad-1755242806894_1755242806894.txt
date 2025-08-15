@@ -1,0 +1,76 @@
+Plan to run on Replit
+
+Use the Java (OpenJDK) template, then add Spring Boot dependencies via Gradle.
+Replit provides a Linux container; you can run a Spring Boot app with Gradle tasks.
+You’ll need to expose a PostgreSQL database. Replit can run a PostgreSQL DB in a separate service or use a remote DB (e.g., ElephantSQL, Supabase). For a quick MVP, you can start with an in-container PostgreSQL service if you’re on a plan that supports Docker, or connect to an external DB.
+Steps to implement
+
+Create a new Replit project
+Language: Gradle (Java)
+Name: easy-learning-api (or your preferred name)
+Add project files
+Use the Gradle-based structure you already have:
+api-server/build.gradle
+api-server/settings.gradle
+api-server/src/... (your Java packages)
+api-server/docker/Dockerfile (optional, for local runs)
+docker-compose.yml (if you want to run DB locally via Docker; Replit doesn’t support docker-compose directly, so you’d connect to an external DB)
+Configure database connection
+In api-server/src/main/resources/application.properties, set:
+spring.datasource.url=jdbc:postgresql://<DB_HOST>:<DB_PORT>/<DB_NAME>
+spring.datasource.username=<DB_USER>
+spring.datasource.password=<DB_PASSWORD>
+spring.jpa.hibernate.ddl-auto=update (not needed if you use Flyway)
+spring.flyway.locations=classpath:db/migration
+If you use Flyway, ensure migrations are on your classpath (Flyway will run on startup).
+Add external database
+If using an external DB service, add the credentials as environment variables in Replit:
+DB_URL, DB_USER, DB_PASSWORD, DB_NAME
+In application.properties, you can reference env vars:
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USER}
+spring.datasource.password=${DB_PASSWORD}
+Alternatively, hardcode for testing (not recommended for production).
+Start the app
+In Replit, the Run button should execute:
+./gradlew bootRun
+If you need a specific command, you can create a .replit file with:
+language = "Java"
+run = "./gradlew bootRun"
+Test endpoints and capture outputs
+Use Replit's built-in Web view or an external tool like Postman/Insomnia to send HTTP requests.
+Base URL: http://<repl-url>/
+Example: http://your-repl-id.username.repl.co/api/auth/register
+For each request, note the expected input and the output you should see.
+Request/testing guidance
+
+Authentication
+POST /api/auth/register
+Body: { "name": "Test User", "email": "test@example.com", "password": "password" }
+Expected: 200 OK with success message or 201 Created
+POST /api/auth/login
+Body: { "email": "test@example.com", "password": "password" }
+Expected: 200 OK with JSON { "accessToken": "...", "refreshToken": "..." }
+Courses
+GET /api/courses
+Expected: 200 with a list of courses
+GET /api/courses/{id}
+Expected: 200 with course details
+Enrollments
+POST /api/enrollments
+Body: { "course_id": 1 }
+Expected: 200 with enrollment details
+GET /api/users/me/enrollments
+Requires auth
+Quizzes
+POST /api/courses/{courseId}/quizzes
+POST /api/quizzes/{quizId}/submit
+Body: { "answers": [...] }
+Expected: 200 with score
+Best practices for “perfect” outputs
+
+Use consistent JSON structures in responses:
+ApiResponse wrapper for all endpoints: { "success": true, "data": ..., "error": null }
+On errors, return clear messages and appropriate HTTP status codes (400 for bad input, 401 for unauthorized, 403 for forbidden, 404 for not found, 500 for server errors).
+Include timestamps and IDs where helpful.
+Use DTOs for

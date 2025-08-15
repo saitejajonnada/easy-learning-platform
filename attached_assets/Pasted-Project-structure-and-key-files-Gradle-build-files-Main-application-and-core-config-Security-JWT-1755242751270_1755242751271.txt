@@ -1,0 +1,140 @@
+Project structure and key files
+Gradle build files
+Main application and core config (Security, JWT)
+DAO layer with JdbcTemplate
+Core services and REST controllers (auth, courses, enrollments, lessons, quizzes)
+DTOs
+Flyway migrations (V1 and V2)
+Minimal Docker setup for local dev (PostgreSQL + Spring Boot)
+Note: This is a compact MVP; you can expand tests and features later.
+
+Project structure (paths and purpose)
+api-server/
+build.gradle
+settings.gradle
+src/
+main/
+java/
+com/
+easylearning/
+EasylearningApplication.java (main)
+config/
+SecurityConfig.java
+JwtUtil.java
+controller/
+AuthController.java
+CourseController.java
+EnrollmentController.java
+QuizController.java
+service/
+UserService.java
+CourseService.java
+EnrollmentService.java
+QuizService.java
+dto/
+AuthRequest.java
+AuthResponse.java
+CourseDto.java
+LessonDto.java
+EnrollmentDto.java
+QuizDto.java
+QuestionDto.java
+response/
+ApiResponse.java
+repository/
+UserDao.java
+CourseDao.java
+LessonDao.java
+EnrollmentDao.java
+QuizDao.java
+QuestionDao.java
+ResultDao.java
+CertificateDao.java
+model/
+User.java
+Course.java
+Lesson.java
+Enrollment.java
+Quiz.java
+Question.java
+Result.java
+Certificate.java
+resources/
+application.properties
+db/
+migration/
+V1__init_schema.sql
+V2__seed_data.sql
+templates/ (empty for now)
+logback.xml (optional)
+docker/
+Dockerfile
+docker-compose.yml
+Gradle build files
+/settings.gradle
+rootProject.name = 'easy-learning-api'
+/api-server/build.gradle
+plugins {
+id 'org.springframework.boot' version '3.2.0'
+id 'io.spring.dependency-management' version '1.1.0'
+id 'java'
+}
+
+group = 'com.easylearning'
+version = '0.1.0'
+sourceCompatibility = '17'
+targetCompatibility = '17'
+
+repositories {
+mavenCentral()
+}
+
+dependencies {
+implementation 'org.springframework.boot:spring-boot-starter-web'
+implementation 'org.springframework.boot:spring-boot-starter-validation'
+implementation 'org.springframework.boot:spring-boot-starter-security'
+implementation 'org.springframework.boot:spring-boot-starter-logging'
+implementation 'org.postgresql:postgresql:42.6.0'
+implementation 'org.springframework:spring-jdbc'
+implementation 'com.zaxxer:HikariCP:5.0.1'
+implementation 'org.flywaydb:flyway-core:9.20.0'
+implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+test {
+useJUnitPlatform()
+}
+
+Main application
+EasylearningApplication.java
+package com.easylearning;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class EasylearningApplication {
+public static void main(String[] args) {
+SpringApplication.run(EasylearningApplication.class, args);
+}
+}
+
+SecurityConfig and JwtUtil
+config/SecurityConfig.java
+package com.easylearning.config;
+import jakarta.servlet.Filter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.easylearning.config.JwtAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
