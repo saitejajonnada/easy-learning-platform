@@ -1,2 +1,35 @@
+modules = ["java", "java-21", "postgresql-16"]
 [agent]
 expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["gradle", "openjdk21"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Spring Boot Server"
+
+[[workflows.workflow]]
+name = "Spring Boot Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./gradlew bootRun"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
